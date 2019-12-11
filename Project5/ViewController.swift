@@ -80,7 +80,12 @@ class ViewController: UITableViewController {
     }
     
     func isOriginal(word: String) -> Bool {
-        return !usedWords.contains(word)
+        for uWord in usedWords {
+            if uWord.lowercased() == word{
+                return false
+            }
+        }
+        return true
     }
 
     func isReal(word: String) -> Bool {
