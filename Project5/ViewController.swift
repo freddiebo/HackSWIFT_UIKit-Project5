@@ -12,11 +12,12 @@ class ViewController: UITableViewController {
 
     var allWords = [String]()
     var usedWords = [String]()
+    var saves = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        
+        load()
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(promptForAnswer))
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .play, target: self, action: #selector(startGame))
         
@@ -29,7 +30,7 @@ class ViewController: UITableViewController {
         if allWords.isEmpty {
             allWords = ["silkworm"]
         }
-        startGame()
+        //startGame()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -109,7 +110,7 @@ class ViewController: UITableViewController {
 
                     let indexPath = IndexPath(row: 0, section: 0)
                     tableView.insertRows(at: [indexPath], with: .automatic)
-
+                    save()
                     return
                 } else {
                     errorTitle = "Word not recognised"
@@ -134,6 +135,42 @@ class ViewController: UITableViewController {
         let ac = UIAlertController(title: title, message: message, preferredStyle: .alert)
         ac.addAction(UIAlertAction(title: "OK", style: .default))
         present(ac, animated: true)
+    }
+
+    func save() {
+        if !saves.isEmpty {
+            saves.removeAll(keepingCapacity: true)
+        }
+        saves.append(title!)
+        for words in usedWords {
+            saves.append(words)
+        }
+        let jsonEncoder = JSONEncoder()
+        if let savedData = try? jsonEncoder.encode(saves) {
+            let defaults = UserDefaults.standard
+            defaults.set(savedData, forKey: "usedWords")
+        } else {
+            print("Failed to save.")
+        }
+    }
+    
+    func load() {
+        let defaults = UserDefaults.standard
+        if let savedData = defaults.object(forKey: "usedWords") as? Data {
+            let jsonDecoder = JSONDecoder()
+            do {
+                saves = try jsonDecoder.decode([String].self, from: savedData)
+                for words in saves {
+                    if words == saves.first {
+                        title = words
+                    } else {
+                        usedWords.append(words)
+                    }
+                }
+            } catch {
+                print("Failed to load.")
+            }
+        }
     }
 }
 
